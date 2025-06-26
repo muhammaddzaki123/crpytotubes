@@ -20,7 +20,7 @@ export interface Admin extends Models.Document {
 
 // --- Konfigurasi Appwrite ---
 export const config = {
-  platform: "com.poltekes.nutripath.admin",
+  platform: "com.unram.crypto",
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
   projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
   databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID,
