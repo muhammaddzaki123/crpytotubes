@@ -1,7 +1,7 @@
 import { useGlobalContext } from '@/lib/global-provider';
 import { Redirect } from 'expo-router';
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function AdminDashboard() {
   // Ambil 'admin' dan fungsi 'logout' dari konteks global

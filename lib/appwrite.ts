@@ -6,16 +6,17 @@ import {
   Query,
 } from 'react-native-appwrite';
 import { hashPassword } from './hash-service';
+import { encryptData, decryptData } from './encryption-service'; 
 
-// --- Definisi Tipe (Gunakan 'password' agar konsisten) ---
+// --- Definisi Tipe ---
 export interface Admin extends Models.Document {
   name: string;
   email: string;
   userType: 'admin';
-  password?: string; // Atribut ini akan berisi hash
+  password?: string;
 }
 
-// --- Konfigurasi Appwrite (tetap sama) ---
+// ... (konfigurasi Appwrite tetap sama) ...
 export const config = {
   platform: 'com.unram.crypto',
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
@@ -24,14 +25,12 @@ export const config = {
   adminCollectionId: process.env.EXPO_PUBLIC_APPWRITE_ADMIN_COLLECTION_ID,
 };
 
-// Validasi Konfigurasi
 if (!config.adminCollectionId) {
   throw new Error(
     'ID Koleksi Admin (ADMIN_COLLECTION_ID) belum diatur di environment variables.'
   );
 }
 
-// Inisialisasi Klien Appwrite
 export const client = new Client()
   .setEndpoint(config.endpoint!)
   .setProject(config.projectId!)
@@ -39,20 +38,15 @@ export const client = new Client()
 
 export const databases = new Databases(client);
 
-// =================================================================
-// LAYANAN OTENTIKASI MANUAL (HANYA DATABASE)
-// =================================================================
-
 /**
  * Mendaftarkan admin baru langsung ke database.
  */
 export async function registerAdmin(
   name: string,
   email: string,
-  plainTextPassword: string // Ubah nama parameter agar lebih jelas
+  plainTextPassword: string
 ): Promise<Models.Document> {
   try {
-    // Periksa apakah email sudah ada di database
     const existingUsers = await databases.listDocuments(
       config.databaseId!,
       config.adminCollectionId!,
@@ -63,20 +57,18 @@ export async function registerAdmin(
       throw new Error('Pengguna dengan email ini sudah terdaftar.');
     }
 
-    // Hash kata sandi yang diberikan pengguna
     const hashedPassword = hashPassword(plainTextPassword);
+    const encryptedName = encryptData(name); // <-- ENKRIPSI NAMA
 
-    // Buat dokumen baru di koleksi 'admins'
-    // Gunakan nama atribut 'password' sesuai dengan yang ada di Appwrite
     const newUserDocument = await databases.createDocument(
       config.databaseId!,
       config.adminCollectionId!,
       ID.unique(),
       {
-        name,
+        name: encryptedName, // <-- SIMPAN NAMA TERENKRIPSI
         email,
         userType: 'admin',
-        password: hashedPassword, // <<<< PERUBAHAN DI SINI
+        password: hashedPassword,
       }
     );
 
@@ -92,10 +84,8 @@ export async function registerAdmin(
  */
 export async function signInAdmin(email: string, plainTextPassword: string): Promise<Admin> {
   try {
-    // Hash kata sandi yang dimasukkan saat login
     const hashedPassword = hashPassword(plainTextPassword);
 
-    // Cari dokumen admin berdasarkan email
     const adminDocs = await databases.listDocuments<Admin>(
       config.databaseId!,
       config.adminCollectionId!,
@@ -108,14 +98,17 @@ export async function signInAdmin(email: string, plainTextPassword: string): Pro
 
     const adminData = adminDocs.documents[0];
 
-    // Bandingkan hash dari input dengan hash yang tersimpan di database
-    // Gunakan nama atribut 'password' untuk mengambil data hash
-    if (adminData.password !== hashedPassword) { // <<<< PERUBAHAN DI SINI
+    if (adminData.password !== hashedPassword) {
       throw new Error('Email atau password salah.');
     }
 
-    // Jika berhasil, kembalikan data admin.
-    return adminData;
+    // Dekripsi nama sebelum mengembalikan data admin
+    const decryptedAdmin: Admin = {
+      ...adminData,
+      name: decryptData(adminData.name), // <-- DEKRIPSI NAMA
+    };
+
+    return decryptedAdmin;
   } catch (error: any) {
     console.error('Gagal login manual:', error);
     throw new Error(error.message || 'Kredensial tidak valid.');
