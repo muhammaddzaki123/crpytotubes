@@ -16,7 +16,7 @@ import {
 
 export default function SignUpAdminScreen() {
   const router = useRouter();
-  const { setAdmin, refetch } = useGlobalContext();
+  const { setAdmin } = useGlobalContext();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,21 +30,12 @@ export default function SignUpAdminScreen() {
 
     setIsSubmitting(true);
     try {
-      // Panggil registerAdmin dengan password asli.
-      // Hashing dan penyimpanan manual terjadi di dalam fungsi ini.
       await registerAdmin(name, email, password);
-
-      // Setelah registrasi berhasil, langsung lakukan "login" manual
-      // untuk mendapatkan data admin dan memperbarui state global.
+      
       const adminData = await signInAdmin(email, password);
       
-      // Perbarui state global dengan data admin yang baru dibuat
       setAdmin(adminData);
 
-      // Lakukan refetch untuk memastikan state lain diperbarui
-      await refetch();
-      
-      // Alihkan ke halaman utama admin
       router.replace('/');
 
     } catch (error: any) {
@@ -110,56 +101,12 @@ export default function SignUpAdminScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#161622',
-  },
-  formContainer: {
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-    color: 'white',
-    fontFamily: 'Rubik-Bold',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'gray',
-    textAlign: 'center',
-    marginBottom: 30,
-    fontFamily: 'Rubik-Regular',
-  },
-  input: {
-    backgroundColor: '#232533',
-    color: 'white',
-    borderWidth: 1,
-    borderColor: '#333',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
-    fontSize: 16,
-    fontFamily: 'Rubik-Regular',
-  },
-  button: {
-    backgroundColor: '#0BBEBB',
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-    fontFamily: 'Rubik-SemiBold',
-  },
-  link: {
-    marginTop: 20,
-    color: '#0BBEBB',
-    textAlign: 'center',
-    fontSize: 16,
-    fontFamily: 'Rubik-Medium',
-  },
+  container: { flex: 1, backgroundColor: '#161622' },
+  formContainer: { paddingHorizontal: 20 },
+  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: 'white', fontFamily: 'Rubik-Bold' },
+  subtitle: { fontSize: 14, color: 'gray', textAlign: 'center', marginBottom: 30, fontFamily: 'Rubik-Regular' },
+  input: { backgroundColor: '#232533', color: 'white', borderWidth: 1, borderColor: '#333', padding: 15, borderRadius: 12, marginBottom: 15, fontSize: 16, fontFamily: 'Rubik-Regular' },
+  button: { backgroundColor: '#0BBEBB', padding: 15, borderRadius: 12, alignItems: 'center' },
+  buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16, fontFamily: 'Rubik-SemiBold' },
+  link: { marginTop: 20, color: '#0BBEBB', textAlign: 'center', fontSize: 16, fontFamily: 'Rubik-Medium' },
 });

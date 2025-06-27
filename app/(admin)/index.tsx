@@ -1,56 +1,79 @@
-import {  logout } from '@/lib/appwrite';
 import { useGlobalContext } from '@/lib/global-provider';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 import React from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useAppwrite } from '@/lib/useAppwrite';
-import { Models } from 'react-native-appwrite';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 
+export default function AdminDashboard() {
+  // Ambil 'admin' dan fungsi 'logout' dari konteks global
+  const { admin, loading, isLogged, logout } = useGlobalContext();
 
-const AdminDashboard = () => {
-  const { admin, refetch: refetchAdmin } = useGlobalContext();
-  const router = useRouter();
-  
+  // Jika masih loading atau belum login, arahkan ke halaman sign-in
+  if (!loading && !isLogged) {
+    return <Redirect href="/sign-in" />;
+  }
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      await refetchAdmin();
-    } catch (error: any) {
-      Alert.alert("Error Logout", error.message);
-    }
+  const handleLogout = () => {
+    // Panggil fungsi logout dari konteks
+    logout();
+    // Tidak perlu redirect manual, karena perubahan isLogged akan ditangani oleh _layout.tsx
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      {/* Header Halaman */}
-      <View className="flex-row items-center justify-between bg-white px-4 py-4 shadow-sm">
-        <View>
-          <Text className="text-lg text-gray-500">Selamat Datang,</Text>
-          <Text className="text-2xl font-bold text-gray-900">{admin?.name || 'Admin'}</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Dashboard Admin</Text>
+          <Text style={styles.subtitle}>Selamat datang kembali,</Text>
+          <Text style={styles.adminName}>{admin?.name || 'Admin'}</Text>
         </View>
-        <TouchableOpacity onPress={handleLogout} className="p-2 bg-red-100 rounded-full">
-          <Ionicons name="log-out-outline" size={28} color="#EF4444" />
-        </TouchableOpacity>
-      </View>
-      <View>
-        halo in adalah tugas sya
-        nama : muhammad dzaki al-qushoyi 
-        nim F1D022143
-      </View>
 
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
-};
+}
 
-export default AdminDashboard;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#161622',
+  },
+  content: {
+    padding: 20,
+  },
+  header: {
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'white',
+    fontFamily: 'Rubik-Bold',
+    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#A0AEC0',
+    fontFamily: 'Rubik-Regular',
+  },
+  adminName: {
+    fontSize: 24,
+    color: 'white',
+    fontFamily: 'Rubik-SemiBold',
+  },
+  logoutButton: {
+    backgroundColor: '#E53E3E', // Warna merah untuk logout
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 'auto', // Posisikan di bawah
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Rubik-SemiBold',
+  },
+});
